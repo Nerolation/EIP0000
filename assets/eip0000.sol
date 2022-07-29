@@ -98,8 +98,10 @@ abstract contract ERC721MerkleProvable is ERC165, ERC721 {
     * @dev Verifies a proof. Note that the {Verifier} implementation must be able to parse the byte-data.
     */
     function _verifyProof(bytes calldata proof) internal view returns (bool) {
-    	require(_merkleTree.isKnownRoot(bytes32(abi.decode(proof, (uint256[]))[0])), "Root not known");
-        return _verifier.verifyProof(proof);
+        uint[] memory _proof = abi.decode(proof, (uint256[]));
+        // Last element in proof MUST be the root
+        require(_merkleTree.isKnownRoot(bytes32(_proof[_proof.length-1])), "Root not known");
+        return _verifier.verifyProof(_proof);
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, ERC721) returns (bool) {
