@@ -11,7 +11,7 @@
 //
 //
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.6;
+pragma solidity ^0.6.11;
 library Pairing {
     struct G1Point {
         uint X;
@@ -199,26 +199,16 @@ contract Verifier {
             [4082367875863433681332203403145435568316851327593401208105741076214120093531,
              8495653923123431417604973247489272438418190587263600148770280649306958101930]
         );
-        vk.IC = new Pairing.G1Point[](4);
+        vk.IC = new Pairing.G1Point[](2);
         
         vk.IC[0] = Pairing.G1Point( 
-            20805107407747188178030389003722462598266521433570126364242161531346651083902,
-            11267122885577612653173904749853143413449587513078743031220636745219929565970
+            14839088740970199677523537596837749430396842505225385808898904786832126068885,
+            589480310555129173105740907519281931114509374840126496859659072260834469673
         );                                      
         
         vk.IC[1] = Pairing.G1Point( 
-            12359340397217682795466278312781421502437442425637179742794436381031960109788,
-            14104973918433836306315662842966036733156620669728621032666135921126511820899
-        );                                      
-        
-        vk.IC[2] = Pairing.G1Point( 
-            12906897754938952369994267380947120531893404943501752004215173358389952845951,
-            11315702073006682362676742971137738757864865563732638294300032878118883937165
-        );                                      
-        
-        vk.IC[3] = Pairing.G1Point( 
-            3763340308725581671394859067158667462770412847008618320032198436312845957212,
-            20929549629599939531633597486470600116632782336093313092637697656229507634617
+            20553250025849170317153063696646914041356465768316215786063896840409149297797,
+            4416202305520756460059216907247642474917858276937415660579352302626042124032
         );                                      
         
     }
@@ -243,21 +233,18 @@ contract Verifier {
     }
     /// @return r  bool true if proof is valid
     function verifyProof(
-            bytes memory proof_
+            uint256[] calldata p
         ) public view returns (bool r) {
-
-        uint8 prooflength = 9;
-        uint8 inputlength = 3;
-        uint256[11] memory p = abi.decode(proof_, (uint256[11]));
-
 
         Proof memory _proof;
         _proof.A = Pairing.G1Point(p[0], p[1]);
         _proof.B = Pairing.G2Point([p[2], p[3]], [p[4], p[5]]);
         _proof.C = Pairing.G1Point(p[6], p[7]);
-        uint[] memory inputValues = new uint[](inputlength);
-        for(uint i = prooflength; i < inputlength; i++){
-            inputValues[i-prooflength] = p[i];
+        
+        // Only root is public variable
+        uint[] memory inputValues = new uint[](1);
+        for(uint i = p.length-1; i < 1; i++){
+            inputValues[i-p.length-1] = p[i];
         }
         if (verify(inputValues, _proof) == 0) {
             return true;
